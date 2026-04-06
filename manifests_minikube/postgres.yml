@@ -1,0 +1,46 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  labels:
+    run: postgres
+  name: postgres
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      run: postgres
+  template:
+    metadata:
+      labels:
+        run: postgres
+    spec: 
+      containers:
+      - image: dorothag/database:latest 
+        name: postgres
+        ports:
+        - containerPort: 5432
+        env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: app-secrets
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-secrets
+                key: POSTGRES_PASSWORD
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    run: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
